@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NexusBakery.Agents/NexusBakery.Agents.csproj" />
+    <Project Path="src/NexusBakery.Api/NexusBakery.Api.csproj" />
+    <Project Path="src/NexusBakery.Application/NexusBakery.Application.csproj" />
+    <Project Path="src/NexusBakery.Domain/NexusBakery.Domain.csproj" />
+    <Project Path="src/NexusBakery.Infrastructure/NexusBakery.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NexusBakery.UnitTests/NexusBakery.UnitTests.csproj" />
+  </Folder>
+</Solution>

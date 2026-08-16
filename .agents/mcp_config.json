@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "nexus-database-tools": {
+      "command": "node",
+      "args": [
+        "scripts/mcp-database-tools.js"
+      ],
+      "env": {
+        "MONGODB_URI": "mongodb://localhost:27017/nexus_bakery"
+      }
+    }
+  }
+}
