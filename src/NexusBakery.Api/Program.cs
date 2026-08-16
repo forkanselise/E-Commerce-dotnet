@@ -12,10 +12,24 @@ using NexusBakery.Infrastructure.Persistence;
 using NexusBakery.Infrastructure.Persistence.Repositories;
 using NexusBakery.Infrastructure.Persistence.Seeders;
 
-// 1. Load .env file from root directory
-Env.TraversePath().Load();
+// 1. Load .env file from root directory (if present)
+try
+{
+    Env.TraversePath().Load();
+}
+catch
+{
+    // Ignore when running in Docker or environment without .env file
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Support Render / Cloud dynamic PORT
+var renderPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(renderPort))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{renderPort}");
+}
 
 // Add Configuration from Environment Variables
 builder.Configuration.AddEnvironmentVariables();
@@ -26,11 +40,34 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 
 // 3. Configure CORS for React/Vite Client
+var allowedOriginsEnv = builder.Configuration["ALLOWED_ORIGINS"] 
+    ?? Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+
+var defaultOrigins = new List<string> 
+{ 
+    "http://localhost:5173", 
+    "http://localhost:3000", 
+    "http://127.0.0.1:5173" 
+};
+
+if (!string.IsNullOrWhiteSpace(allowedOriginsEnv))
+{
+    var customOrigins = allowedOriginsEnv.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    defaultOrigins.AddRange(customOrigins);
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173")
+        policy.SetIsOriginAllowed(origin =>
+              {
+                  if (string.IsNullOrEmpty(origin)) return false;
+                  var uri = new Uri(origin);
+                  return uri.Host.EndsWith("onrender.com", StringComparison.OrdinalIgnoreCase) ||
+                         defaultOrigins.Contains(origin) ||
+                         origin.Contains("localhost");
+              })
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

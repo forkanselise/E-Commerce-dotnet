@@ -1,0 +1,12 @@
+**/.git
+**/.github
+**/.vs
+**/.vscode
+**/.agents
+**/bin
+**/obj
+**/.env
+**/.env.*
+**/dist
+**/node_modules
+tests/
