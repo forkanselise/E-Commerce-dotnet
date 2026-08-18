@@ -85,3 +85,7 @@ public interface IMetricsRepository : IRepository<Entities.SiteMetrics>
     Task IncrementLifetimeVisitsAsync(CancellationToken cancellationToken = default);
     Task RecordOrderCompletedAsync(decimal revenue, CancellationToken cancellationToken = default);
 }
+
+public interface IMobilePhoneRepository : IRepository<Entities.MobilePhone>
+{
+}

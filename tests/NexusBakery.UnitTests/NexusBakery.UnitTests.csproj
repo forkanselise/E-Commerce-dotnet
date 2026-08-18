@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\NexusBakery.Domain\NexusBakery.Domain.csproj" />
     <ProjectReference Include="..\..\src\NexusBakery.Infrastructure\NexusBakery.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\NexusBakery.Agents\NexusBakery.Agents.csproj" />
+    <ProjectReference Include="..\..\src\NexusBakery.Api\NexusBakery.Api.csproj" />
   </ItemGroup>
 
 </Project>

@@ -58,4 +58,5 @@ public class MongoDbContext
     public IMongoCollection<Subscription> Subscriptions => _database.GetCollection<Subscription>("subscriptions");
     public IMongoCollection<WarehouseInventory> WarehouseInventories => _database.GetCollection<WarehouseInventory>("warehouse_inventory");
     public IMongoCollection<SiteMetrics> SiteMetrics => _database.GetCollection<SiteMetrics>("site_metrics");
+    public IMongoCollection<MobilePhone> MobilePhones => _database.GetCollection<MobilePhone>("mobile_phones");
 }
