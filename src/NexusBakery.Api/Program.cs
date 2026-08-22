@@ -82,6 +82,7 @@ builder.Services.AddScoped<ITutorialRepository, TutorialRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IMetricsRepository, MetricsRepository>();
+builder.Services.AddScoped<IMobilePhoneRepository, MobilePhoneRepository>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
 // 5. Register Application Services
@@ -90,6 +91,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ITutorialService, TutorialService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IMobilePhoneService, MobilePhoneService>();
 
 // 6. Register Multi-Agent AI Engine & Tools
 builder.Services.AddScoped<SearchProductsTool>();

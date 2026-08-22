@@ -19,17 +19,20 @@ public class OrderService : IOrderService
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IMetricsRepository _metricsRepository;
+    private readonly IMobilePhoneRepository _mobilePhoneRepository;
 
     public OrderService(
         IOrderRepository orderRepository,
         IProductRepository productRepository,
         IWarehouseRepository warehouseRepository,
-        IMetricsRepository metricsRepository)
+        IMetricsRepository metricsRepository,
+        IMobilePhoneRepository mobilePhoneRepository)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
         _warehouseRepository = warehouseRepository;
         _metricsRepository = metricsRepository;
+        _mobilePhoneRepository = mobilePhoneRepository;
     }
 
     public async Task<OrderDto> CreateOrderAsync(CreateOrderRequest request, string userId, CancellationToken cancellationToken = default)
@@ -45,41 +48,75 @@ public class OrderService : IOrderService
         foreach (var itemReq in request.Items)
         {
             var product = await _productRepository.GetByIdAsync(itemReq.ProductId, cancellationToken);
-            if (product == null || !product.IsAvailable)
+            var mobilePhone = product == null ? await _mobilePhoneRepository.GetByIdAsync(itemReq.ProductId, cancellationToken) : null;
+
+            if (product == null && mobilePhone == null)
             {
-                throw new InvalidOperationException($"Product '{itemReq.ProductId}' is no longer available.");
+                throw new InvalidOperationException($"Item '{itemReq.ProductId}' is no longer available.");
             }
 
-            if (product.WarehouseStock < itemReq.Quantity)
+            if (product != null)
             {
-                throw new InvalidOperationException($"Insufficient stock for '{product.Title}'. Requested: {itemReq.Quantity}, Available: {product.WarehouseStock}.");
+                if (!product.IsAvailable)
+                {
+                    throw new InvalidOperationException($"Product '{itemReq.ProductId}' is no longer available.");
+                }
+
+                if (product.WarehouseStock < itemReq.Quantity)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for '{product.Title}'. Requested: {itemReq.Quantity}, Available: {product.WarehouseStock}.");
+                }
+
+                var itemSubtotal = product.Price * itemReq.Quantity;
+                subtotal += itemSubtotal;
+
+                orderItems.Add(new OrderItem
+                {
+                    ProductId = product.Id,
+                    Title = product.Title,
+                    Sku = product.Sku,
+                    UnitPrice = product.Price,
+                    Quantity = itemReq.Quantity,
+                    Subtotal = itemSubtotal,
+                    Thumbnail = product.Images.FirstOrDefault()?.Url
+                });
+
+                // Decrement Stock
+                await _productRepository.UpdateStockAsync(product.Id, -itemReq.Quantity, cancellationToken);
+                var newStock = product.WarehouseStock - itemReq.Quantity;
+                await _warehouseRepository.AdjustStockAsync(
+                    product.Id,
+                    newStock,
+                    userId,
+                    "Customer Order",
+                    "User",
+                    $"Order fulfillment for {itemReq.Quantity} units",
+                    cancellationToken);
             }
-
-            var itemSubtotal = product.Price * itemReq.Quantity;
-            subtotal += itemSubtotal;
-
-            orderItems.Add(new OrderItem
+            else if (mobilePhone != null)
             {
-                ProductId = product.Id,
-                Title = product.Title,
-                Sku = product.Sku,
-                UnitPrice = product.Price,
-                Quantity = itemReq.Quantity,
-                Subtotal = itemSubtotal,
-                Thumbnail = product.Images.FirstOrDefault()?.Url
-            });
+                if (mobilePhone.Stock < itemReq.Quantity)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for '{mobilePhone.Title}'. Requested: {itemReq.Quantity}, Available: {mobilePhone.Stock}.");
+                }
 
-            // Decrement Stock
-            await _productRepository.UpdateStockAsync(product.Id, -itemReq.Quantity, cancellationToken);
-            var newStock = product.WarehouseStock - itemReq.Quantity;
-            await _warehouseRepository.AdjustStockAsync(
-                product.Id,
-                newStock,
-                userId,
-                "Customer Order",
-                "User",
-                $"Order fulfillment for {itemReq.Quantity} units",
-                cancellationToken);
+                var itemSubtotal = mobilePhone.Price * itemReq.Quantity;
+                subtotal += itemSubtotal;
+
+                orderItems.Add(new OrderItem
+                {
+                    ProductId = mobilePhone.Id,
+                    Title = mobilePhone.Title,
+                    Sku = $"PHONE-{mobilePhone.Model.ToUpperInvariant()}",
+                    UnitPrice = mobilePhone.Price,
+                    Quantity = itemReq.Quantity,
+                    Subtotal = itemSubtotal,
+                    Thumbnail = mobilePhone.ImageUrl
+                });
+
+                mobilePhone.Stock -= itemReq.Quantity;
+                await _mobilePhoneRepository.UpdateAsync(mobilePhone, cancellationToken);
+            }
         }
 
         decimal shippingCost = subtotal > 2500 ? 0 : 120.00m; // Free shipping over 2500 BDT
