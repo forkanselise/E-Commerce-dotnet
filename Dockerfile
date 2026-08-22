@@ -9,7 +9,6 @@ COPY src/NexusBakery.Application/NexusBakery.Application.csproj src/NexusBakery.
 COPY src/NexusBakery.Infrastructure/NexusBakery.Infrastructure.csproj src/NexusBakery.Infrastructure/
 COPY src/NexusBakery.Agents/NexusBakery.Agents.csproj src/NexusBakery.Agents/
 COPY src/NexusBakery.Api/NexusBakery.Api.csproj src/NexusBakery.Api/
-COPY tests/NexusBakery.UnitTests/NexusBakery.UnitTests.csproj tests/NexusBakery.UnitTests/
 
 # Restore dependencies
 RUN dotnet restore src/NexusBakery.Api/NexusBakery.Api.csproj
