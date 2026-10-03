@@ -1,0 +1,1 @@
+using System.Threading.Tasks; using Microsoft.AspNetCore.Http; namespace NexusBakery.Application.Interfaces; public interface IFileStorageService { Task<string> UploadFileAsync(IFormFile file, string folder); }
