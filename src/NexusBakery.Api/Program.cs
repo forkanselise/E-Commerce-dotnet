@@ -88,6 +88,7 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 // 5. Register Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFileStorageService, MockFileStorageService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ITutorialService, TutorialService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
@@ -186,3 +187,4 @@ app.MapGet("/api/health", () => Results.Ok(new
 }));
 
 app.Run();
+
