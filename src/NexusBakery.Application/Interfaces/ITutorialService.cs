@@ -1,0 +1,1 @@
+using System.Threading.Tasks; using NexusBakery.Application.DTOs.Tutorials; namespace NexusBakery.Application.Interfaces; public interface ITutorialService { Task<string> CreateAsync(CreateTutorialDto dto); Task UpdateAsync(string id, UpdateTutorialDto dto); Task AddMediaAsync(string id, string url, bool isVideo); }
