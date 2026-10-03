@@ -28,6 +28,14 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id }, new { id });
     }
 
+    
+    [HttpGet]
+    public async Task<IActionResult> GetAllProducts()
+    {
+        var products = await _productService.GetAllAsync();
+        return Ok(products);
+    }
+
     [HttpGet("{id}")]
     public IActionResult GetProductById(string id) => Ok();
 
@@ -49,3 +57,6 @@ public class ProductsController : ControllerBase
         return Ok(new { Url = url });
     }
 }
+
+
+
