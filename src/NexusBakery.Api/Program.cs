@@ -7,6 +7,7 @@ using NexusBakery.Agents.Core;
 using NexusBakery.Agents.Tools;
 using NexusBakery.Api.Hubs;
 using NexusBakery.Application.Services;
+using NexusBakery.Application.Interfaces;
 using NexusBakery.Domain.Interfaces;
 using NexusBakery.Infrastructure.Persistence;
 using NexusBakery.Infrastructure.Persistence.Repositories;
