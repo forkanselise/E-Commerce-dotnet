@@ -1,1 +1,12 @@
-using System.Threading.Tasks; using NexusBakery.Application.DTOs.Tutorials; using NexusBakery.Application.Interfaces; namespace NexusBakery.Application.Services; public class TutorialService : ITutorialService { public Task<string> CreateAsync(CreateTutorialDto dto) => Task.FromResult(\"id\"); public Task UpdateAsync(string id, UpdateTutorialDto dto) => Task.CompletedTask; public Task AddMediaAsync(string id, string url, bool isVideo) => Task.CompletedTask; }
+using System.Threading.Tasks;
+using NexusBakery.Application.DTOs.Tutorials;
+using NexusBakery.Application.Interfaces;
+
+namespace NexusBakery.Application.Services;
+
+public class TutorialService : ITutorialService
+{
+    public Task<string> CreateAsync(CreateTutorialDto dto) => Task.FromResult("id");
+    public Task UpdateAsync(string id, UpdateTutorialDto dto) => Task.CompletedTask;
+    public Task AddMediaAsync(string id, string url, bool isVideo) => Task.CompletedTask;
+}

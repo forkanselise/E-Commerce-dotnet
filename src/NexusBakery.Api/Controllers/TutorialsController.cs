@@ -1,1 +1,51 @@
-using System.Threading.Tasks; using Microsoft.AspNetCore.Authorization; using Microsoft.AspNetCore.Http; using Microsoft.AspNetCore.Mvc; using NexusBakery.Application.DTOs.Tutorials; using NexusBakery.Application.Interfaces; namespace NexusBakery.Api.Controllers; [ApiController] [Route(\"api/[controller]\")] public class TutorialsController : ControllerBase { private readonly ITutorialService _tutorialService; private readonly IFileStorageService _fileStorageService; public TutorialsController(ITutorialService tutorialService, IFileStorageService fileStorageService) { _tutorialService = tutorialService; _fileStorageService = fileStorageService; } [HttpPost] [Authorize(Roles = \"Admin, SystemAdmin\")] public async Task<IActionResult> CreateTutorial([FromBody] CreateTutorialDto dto) { var id = await _tutorialService.CreateAsync(dto); return CreatedAtAction(nameof(GetTutorialById), new { id }, new { id }); } [HttpGet(\"{id}\")] public IActionResult GetTutorialById(string id) => Ok(); [HttpPut(\"{id}\")] [Authorize(Roles = \"Admin, SystemAdmin\")] public async Task<IActionResult> UpdateTutorial(string id, [FromBody] UpdateTutorialDto dto) { await _tutorialService.UpdateAsync(id, dto); return NoContent(); } [HttpPost(\"{id}/media\")] [Authorize(Roles = \"Admin, SystemAdmin\")] [RequestSizeLimit(500_000_000)] public async Task<IActionResult> UploadMedia(string id, IFormFile file, [FromQuery] bool isVideo = false) { var url = await _fileStorageService.UploadFileAsync(file, isVideo ? \"videos\" : \"thumbnails\"); await _tutorialService.AddMediaAsync(id, url, isVideo); return Ok(new { Url = url }); } }
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using NexusBakery.Application.DTOs.Tutorials;
+using NexusBakery.Application.Interfaces;
+
+namespace NexusBakery.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class TutorialsController : ControllerBase
+{
+    private readonly ITutorialService _tutorialService;
+    private readonly IFileStorageService _fileStorageService;
+
+    public TutorialsController(ITutorialService tutorialService, IFileStorageService fileStorageService)
+    {
+        _tutorialService = tutorialService;
+        _fileStorageService = fileStorageService;
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin, SystemAdmin")]
+    public async Task<IActionResult> CreateTutorial([FromBody] CreateTutorialDto dto)
+    {
+        var id = await _tutorialService.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetTutorialById), new { id }, new { id });
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetTutorialById(string id) => Ok();
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin, SystemAdmin")]
+    public async Task<IActionResult> UpdateTutorial(string id, [FromBody] UpdateTutorialDto dto)
+    {
+        await _tutorialService.UpdateAsync(id, dto);
+        return NoContent();
+    }
+
+    [HttpPost("{id}/media")]
+    [Authorize(Roles = "Admin, SystemAdmin")]
+    [RequestSizeLimit(500_000_000)]
+    public async Task<IActionResult> UploadMedia(string id, IFormFile file, [FromQuery] bool isVideo = false)
+    {
+        var url = await _fileStorageService.UploadFileAsync(file.OpenReadStream(), file.FileName, file.ContentType, isVideo ? "videos" : "thumbnails");
+        await _tutorialService.AddMediaAsync(id, url, isVideo);
+        return Ok(new { Url = url });
+    }
+}
