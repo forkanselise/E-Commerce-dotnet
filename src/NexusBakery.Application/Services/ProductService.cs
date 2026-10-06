@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using NexusBakery.Application.DTOs.Products;
@@ -39,6 +40,29 @@ public class ProductService : IProductService
         return created.Id;
     }
 
-    public Task UpdateAsync(string id, UpdateProductDto dto) => Task.CompletedTask;
+    public async Task<Product?> UpdateAsync(string id, UpdateProductDto dto)
+    {
+        var existing = await _productRepository.GetByIdAsync(id);
+        if (existing == null) return null;
+
+        if (!string.IsNullOrWhiteSpace(dto.Title)) existing.Title = dto.Title;
+        if (!string.IsNullOrWhiteSpace(dto.Sku)) existing.Sku = dto.Sku;
+        if (!string.IsNullOrWhiteSpace(dto.ShortDescription)) existing.ShortDescription = dto.ShortDescription;
+        if (!string.IsNullOrWhiteSpace(dto.Description)) existing.Description = dto.Description;
+        if (dto.Price > 0) existing.Price = dto.Price;
+        if (dto.WarehouseStock >= 0) existing.WarehouseStock = dto.WarehouseStock;
+
+        if (!string.IsNullOrWhiteSpace(dto.Category))
+        {
+            if (Enum.TryParse<NexusBakery.Domain.Enums.ProductCategory>(dto.Category, true, out var catEnum))
+            {
+                existing.Category = catEnum;
+            }
+        }
+
+        await _productRepository.UpdateAsync(existing);
+        return existing;
+    }
+
     public Task AddImageAsync(string id, string url) => Task.CompletedTask;
 }
