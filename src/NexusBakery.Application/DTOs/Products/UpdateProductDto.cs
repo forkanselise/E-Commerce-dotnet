@@ -13,4 +13,5 @@ public class UpdateProductDto
     public decimal? CompareAtPrice { get; set; }
     public int WarehouseStock { get; set; }
     public bool? IsAvailable { get; set; }
+    public System.Collections.Generic.List<NexusBakery.Domain.Entities.ProductImage>? Images { get; set; }
 }
