@@ -5,6 +5,7 @@ using NexusBakery.Application.DTOs.Products;
 using NexusBakery.Application.Interfaces;
 using NexusBakery.Domain.Interfaces;
 using NexusBakery.Domain.Entities;
+using System.Linq;
 
 namespace NexusBakery.Application.Services;
 
@@ -26,15 +27,16 @@ public class ProductService : IProductService
     {
         var product = new Product
         {
-            Title = dto.Title,
-            Slug = dto.Slug ?? dto.Title?.ToLower().Replace(" ", "-"),
-            Sku = dto.Sku,
+            Title = dto.Title ?? string.Empty,
+            Slug = dto.Slug ?? dto.Title?.ToLower().Replace(" ", "-") ?? string.Empty,
+            Sku = dto.Sku ?? string.Empty,
             Category = (NexusBakery.Domain.Enums.ProductCategory)Enum.Parse(typeof(NexusBakery.Domain.Enums.ProductCategory), dto.Category ?? "Ingredients", true),
             Price = dto.Price,
             WarehouseStock = dto.WarehouseStock,
-            ShortDescription = dto.ShortDescription,
-            Description = dto.Description,
-            IsAvailable = dto.IsAvailable
+            ShortDescription = dto.ShortDescription ?? string.Empty,
+            Description = dto.Description ?? string.Empty,
+            IsAvailable = dto.IsAvailable,
+            Images = dto.Images ?? new List<ProductImage>()
         };
         var created = await _productRepository.CreateAsync(product);
         return created.Id;
@@ -62,6 +64,11 @@ public class ProductService : IProductService
             {
                 existing.Category = (NexusBakery.Domain.Enums.ProductCategory)catInt;
             }
+        }
+
+        if (dto.Images != null && dto.Images.Any())
+        {
+            existing.Images = dto.Images;
         }
 
         await _productRepository.UpdateAsync(existing);
