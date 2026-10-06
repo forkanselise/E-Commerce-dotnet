@@ -28,7 +28,6 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id }, new { id });
     }
 
-    
     [HttpGet]
     public async Task<IActionResult> GetAllProducts()
     {
@@ -43,8 +42,9 @@ public class ProductsController : ControllerBase
     [Authorize(Roles = "Admin, SystemAdmin")]
     public async Task<IActionResult> UpdateProduct(string id, [FromBody] UpdateProductDto dto)
     {
-        await _productService.UpdateAsync(id, dto);
-        return NoContent();
+        var updatedProduct = await _productService.UpdateAsync(id, dto);
+        if (updatedProduct == null) return NotFound(new { message = "Product not found" });
+        return Ok(updatedProduct);
     }
 
     [HttpPost("{id}/images")]
@@ -57,6 +57,3 @@ public class ProductsController : ControllerBase
         return Ok(new { Url = url });
     }
 }
-
-
-
