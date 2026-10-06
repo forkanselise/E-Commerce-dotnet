@@ -58,6 +58,10 @@ public class ProductService : IProductService
             {
                 existing.Category = catEnum;
             }
+            else if (int.TryParse(dto.Category, out var catInt) && Enum.IsDefined(typeof(NexusBakery.Domain.Enums.ProductCategory), catInt))
+            {
+                existing.Category = (NexusBakery.Domain.Enums.ProductCategory)catInt;
+            }
         }
 
         await _productRepository.UpdateAsync(existing);
