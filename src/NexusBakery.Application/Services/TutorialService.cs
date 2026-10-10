@@ -64,7 +64,7 @@ public class TutorialService : ITutorialService
         if (!string.IsNullOrWhiteSpace(dto.Title)) existing.Title = dto.Title;
         if (!string.IsNullOrWhiteSpace(dto.Category)) existing.Category = dto.Category;
         if (!string.IsNullOrWhiteSpace(dto.Description)) existing.Description = dto.Description;
-        if (!string.IsNullOrWhiteSpace(dto.Thumbnail)) existing.Thumbnail = dto.Thumbnail;
+        if (dto.Thumbnail != null) existing.Thumbnail = dto.Thumbnail;
         if (!string.IsNullOrWhiteSpace(dto.VideoUrl)) existing.VideoUrl = dto.VideoUrl;
         if (!string.IsNullOrWhiteSpace(dto.AccessType)) existing.AccessType = dto.AccessType;
         if (dto.DurationMinutes > 0) existing.DurationMinutes = dto.DurationMinutes;
