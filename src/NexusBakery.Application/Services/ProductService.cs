@@ -66,7 +66,7 @@ public class ProductService : IProductService
             }
         }
 
-        if (dto.Images != null && dto.Images.Any())
+        if (dto.Images != null)
         {
             existing.Images = dto.Images;
         }
