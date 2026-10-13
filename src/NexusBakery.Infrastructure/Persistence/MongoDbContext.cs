@@ -39,7 +39,7 @@ public class MongoDbContext
             mongoClientSettings.SslSettings = new SslSettings
             {
                 CheckCertificateRevocation = false,
-                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
                 ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true
             };
             mongoClientSettings.AllowInsecureTls = true;

@@ -1,7 +1,10 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using NexusBakery.Application.DTOs.Products;
 using NexusBakery.Application.Interfaces;
 
@@ -13,19 +16,67 @@ public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
     private readonly IFileStorageService _fileStorageService;
+    private readonly ILogger<ProductsController> _logger;
 
-    public ProductsController(IProductService productService, IFileStorageService fileStorageService)
+    public ProductsController(
+        IProductService productService, 
+        IFileStorageService fileStorageService,
+        ILogger<ProductsController> logger)
     {
         _productService = productService;
         _fileStorageService = fileStorageService;
+        _logger = logger;
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin, SystemAdmin")]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto dto)
     {
-        var id = await _productService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetProductById), new { id }, new { id });
+        if (dto == null)
+        {
+            return BadRequest(new { message = "Product payload cannot be null." });
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Title))
+        {
+            return BadRequest(new { message = "Product title is required." });
+        }
+
+        try
+        {
+            var product = await _productService.CreateAsync(dto);
+            return StatusCode(StatusCodes.Status201Created, product);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Validation error creating product: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            _logger.LogWarning(ex, "Duplicate key constraint error when creating product");
+            return Conflict(new { message = "A product with this SKU or slug already exists." });
+        }
+        catch (MongoBulkWriteException ex) when (System.Linq.Enumerable.Any(ex.WriteErrors, e => e.Category == ServerErrorCategory.DuplicateKey))
+        {
+            _logger.LogWarning(ex, "Duplicate key bulk write error when creating product");
+            return Conflict(new { message = "A product with this SKU or slug already exists." });
+        }
+        catch (TimeoutException ex)
+        {
+            _logger.LogError(ex, "Database timeout when creating product");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "Database connection timed out. Please verify MongoDB connectivity.", error = ex.Message });
+        }
+        catch (MongoConnectionException ex)
+        {
+            _logger.LogError(ex, "Database connection failed when creating product");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "Database connection failed. Please verify MongoDB connectivity.", error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal error when creating product");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Failed to create product", error = ex.Message });
+        }
     }
 
     [HttpGet]
@@ -36,7 +87,12 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetProductById(string id) => Ok();
+    public async Task<IActionResult> GetProductById(string id)
+    {
+        var product = await _productService.GetByIdAsync(id);
+        if (product == null) return NotFound(new { message = "Product not found" });
+        return Ok(product);
+    }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin, SystemAdmin")]

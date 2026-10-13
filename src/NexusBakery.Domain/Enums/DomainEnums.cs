@@ -1,4 +1,4 @@
-namespace NexusBakery.Domain.Enums;
+﻿namespace NexusBakery.Domain.Enums;
 
 public enum UserRole
 {
@@ -18,7 +18,12 @@ public enum ProductCategory
 {
     Bakery,
     BakingTools,
-    Electronics
+    Electronics,
+    Ingredients,
+    Tools,
+    Packaging,
+    Decorations,
+    Moulds
 }
 
 public enum PaymentMethodType
