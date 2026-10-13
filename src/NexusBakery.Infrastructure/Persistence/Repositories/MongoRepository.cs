@@ -60,6 +60,10 @@ public class MongoRepository<T> : IRepository<T> where T : BaseEntity
 
     public virtual async Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(entity.Id) || !MongoDB.Bson.ObjectId.TryParse(entity.Id, out _))
+        {
+            entity.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
+        }
         entity.CreatedAt = DateTime.UtcNow;
         entity.UpdatedAt = DateTime.UtcNow;
         await Collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
